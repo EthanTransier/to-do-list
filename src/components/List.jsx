@@ -14,39 +14,26 @@ function reducer(state, action) {
             console.log(state)
             state.push(action.newTask)
             localStorage.setItem('task', JSON.stringify(state))
+            updateCats(action.newTask.cat)
             return state
         }
-        case 'change_name':{
-            console.log('changing name')
-            const current = state.filter((x) => x.id == id)
-            state = state.filter((x) => x.id !== id)
-            current.name = action.nextName
-            state.push(current)
-            localStorage.setItem('task', JSON.stringify(state))
-            return state
-        }
-        case 'change_desc':{
-            console.log('changing description')
-            const current = state.filter((x) => x.id == id)
-            state = state.filter((x) => x.id !== id)
-            current.desc = action.nextDesc
-            state.push(current)
-            localStorage.setItem('task', JSON.stringify(state))
-            return state
-        }
-        case 'change_cat':{
-            console.log('changing name')
-            const current = state.filter((x) => x.id == id)
-            state = state.filter((x) => x.id !== id)
-            current.cat = action.nextCat
-            state.push(current)
-            localStorage.setItem('task', JSON.stringify(state))
-            return state
-        }
+        
     }
     throw Error('Unknown action type: ' + action.type)
 }
+
+function updateCats(newCat){
+    // console.log(localStorage.getItem('cats'))
+    var cats = JSON.parse(localStorage.getItem('cats'))
+    console.log(cats)
+    if(!cats.includes(newCat)){
+        cats.push(newCat)
+        localStorage.setItem('cats', JSON.stringify(cats))
+        console.log(localStorage.getItem('cats'))
+    }
+}
 // localStorage.setItem('task', JSON.stringify([{name: 'English', desc: 'pain', cat:'homework', id:0}, {name: 'Math', desc: 'lightwork', cat:'homework', id:1}, {name: 'task project', desc: 'ugh', cat:'coding', id:2}]))
+
 const initialState = JSON.parse(localStorage.getItem('task'))
 
 const List = () => {
@@ -62,17 +49,13 @@ const List = () => {
     }
 
     function changeName(e){
-        console.log(e.target.value)
-        console.log('change name')
-        dispatch({type: 'change_name', nextName: e.target.value, id: current.id})
+        
     }
     function changeDesc(e){
-        console.log('change desc')
-        dispatch({type: 'change_desc', nextDesc: e.target.value, id: current.id})
+        
     }
     function changeCat(e){
-        console.log('change cat')
-        dispatch({type: 'change_cat', nextCat: e.target.value,id: current.id})
+        
     }
     
 
@@ -102,6 +85,7 @@ const List = () => {
             setNewTask({name: newTask.name, desc: newTask.desc, cat: e.target.value})
         }
     }
+    const cats = JSON.parse(localStorage.getItem('cats'))
     if(edit){
         return(
             <form className='editPopout'>
@@ -113,10 +97,17 @@ const List = () => {
                     placeholder={current.desc}
                     onChange={changeDesc} 
                 />
-                <input 
+                <select 
                     placeholder={current.cat}
                     onChange={changeCat} 
-                />
+                >
+                    {
+                        cats.map((x, index) =>(
+                            <option value={x} id={index}>{x}</option>
+                        ))
+
+                    }
+                </select>
                 <button onClick={()=>editToggle({})}>Done</button>
             </form>
         )
