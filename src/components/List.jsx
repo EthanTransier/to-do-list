@@ -1,4 +1,4 @@
-import {useReducer, useState} from 'react'
+import {useReducer, useState, useRef, useEffect} from 'react'
 
 function reducer(state, action) {
     const {type} = action
@@ -17,7 +17,13 @@ function reducer(state, action) {
             updateCats(action.newTask.cat)
             return state
         }
-        
+        case 'edit':{
+            const editedTask = action.editedTask
+            state = state.filter((x) => x.id !== editedTask.id)
+            state.push(editedTask)
+            localStorage.setItem('task', JSON.stringify(state))
+            return state
+        }
     }
     throw Error('Unknown action type: ' + action.type)
 }
@@ -37,32 +43,45 @@ function updateCats(newCat){
 const initialState = JSON.parse(localStorage.getItem('task'))
 
 const List = () => {
+    const noah = useRef(null)
     const [state, dispatch] = useReducer(reducer, initialState)
     const [edit, setEdit] = useState(false)
     const [add, setAdd] = useState(false)
     const [current, setCurrent] = useState({})
+    console.log(JSON.parse(localStorage.getItem('task')).length)
+    const [newTask, setNewTask] = useState({name: 'default', desc: 'default', cat: 'default', id: JSON.parse(localStorage.getItem('task')).length})
+     
+    
+    const currentCats = JSON.parse(localStorage.getItem('cats'))
 
-    const [newTask, setNewTask] = useState({name: 'default', desc: 'default', cat: 'default'})
     function remove(id){
         console.log('removing')
         dispatch({type: 'remove', id: id})
     }
 
     function changeName(e){
-        
+        const newCurrent = current
+        newCurrent.name = e.target.value
+        setCurrent(newCurrent)
     }
     function changeDesc(e){
-        
+        const newCurrent = current
+        newCurrent.desc = e.target.value
+        setCurrent(newCurrent)
     }
     function changeCat(e){
-        
+        const newCurrent = current
+        newCurrent.cat = e.target.value
+        setCurrent(newCurrent)
     }
-    
+    function handleEdit(){
+        dispatch({type: 'edit', editedTask: current})
+    }
 
-    function editToggle(x){
+    function startEdit(x){
         console.log('editing')
         setCurrent(x)
-        setEdit(!edit)
+        setEdit(true)
     }
 
     function addToggle(){
@@ -74,16 +93,18 @@ const List = () => {
     }
 
     function updateNew(e){
+        
         if(e.target.id == 'title'){
             console.log('title')
-            setNewTask({name: e.target.value, desc: newTask.desc, cat: newTask.cat})
+            setNewTask({name: e.target.value, desc: newTask.desc, cat: noah.current.value})
         }else if(e.target.id == 'desc'){
             console.log('desc')
-            setNewTask({name: newTask.name, desc: e.target.value, cat: newTask.cat})
+            setNewTask({name: newTask.name, desc: e.target.value, cat: noah.current.value})
         }else{
             console.log('cat')
-            setNewTask({name: newTask.name, desc: newTask.desc, cat: e.target.value})
+        setNewTask({name: newTask.name, desc: newTask.desc, cat: noah.current.value})
         }
+        
     }
     const cats = JSON.parse(localStorage.getItem('cats'))
     if(edit){
@@ -108,7 +129,7 @@ const List = () => {
 
                     }
                 </select>
-                <button onClick={()=>editToggle({})}>Done</button>
+                <button onClick={()=>handleEdit()}>Done</button>
             </form>
         )
     }
@@ -129,11 +150,18 @@ const List = () => {
                     id='desc'
                 />
                 <label htmlFor="cat"> Category: </label>
-                <input 
-                    onChange={updateNew}
-                    name='cat'
-                    id='cat'
-                />
+                <select 
+                    placeholder={current.cat}
+                    onChange={updateNew} 
+                    ref={noah}
+                >
+                    {
+                        cats.map((x, index) =>(
+                            <option value={x} id={index}>{x}</option>
+                        ))
+
+                    }
+                </select>
                 <button onClick={()=>{
                     addToggle({})
                     handleAddition()
@@ -142,20 +170,29 @@ const List = () => {
         )
     }
   return (
-    <article>
-        {state.map((x, index) => (
-            <div key={index}>
-                <h1>{x.name}</h1>
-                <h3>{x.cat}</h3>
-                <p>{x.desc}</p>
-                <button onClick={() => editToggle(x)}>Edit Task</button>
-                <button onClick={() => remove(x.id)}>Remove Task</button>
+  <article>
+    {currentCats.map((x, index) => (
+      <div key={index}>
+        <hr />
+        <h1>{x}</h1>
+        
+        {state.map((y, index2) => (
+          y.cat === x ? (
+            <div key={index2}>
+              <h2>{y.name}</h2>
+              {/* <h3>{y.cat}</h3> */}
+              <p>{y.desc}</p>
+              <button onClick={() => startEdit(y)}>Edit Task</button>
+              <button onClick={() => remove(y.id)}>Remove Task</button>
             </div>
+          ) : null
         ))}
+      </div>
+    ))}
     <button onClick={() => addToggle()}>Add Task</button>
-            
-    </article>
-  )
+  </article>
+);
+
 }
 
 export default List
