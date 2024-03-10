@@ -86,6 +86,7 @@ const List = () => {
 
     function addToggle(){
         setAdd(!add)
+        // window.location.reload();
     }
 
     function handleAddition(){
@@ -130,6 +131,7 @@ const List = () => {
                     }
                 </select>
                 <button onClick={()=>handleEdit()}>Done</button>
+                
             </form>
         )
     }
@@ -165,31 +167,34 @@ const List = () => {
                 <button onClick={()=>{
                     addToggle({})
                     handleAddition()
-                }}>Done</button>
+                }}>Create Task</button>
+                <button onClick={()=>addToggle()}>Close</button>
             </form>
         )
     }
   return (
-  <article>
+  <article className='container'>
     {currentCats.map((x, index) => (
       <div key={index}>
-        <hr />
         <h1>{x}</h1>
         
         {state.map((y, index2) => (
           y.cat === x ? (
-            <div key={index2}>
-              <h2>{y.name}</h2>
-              {/* <h3>{y.cat}</h3> */}
+            <div key={index2} className='task'>
+                <div className='name-cat'>
+                    <h2>{y.name}</h2>
+                    <h3>{y.cat}</h3>
+                </div>
+              
               <p>{y.desc}</p>
-              <button onClick={() => startEdit(y)}>Edit Task</button>
-              <button onClick={() => remove(y.id)}>Remove Task</button>
+              <button onClick={() => startEdit(y)} className='edit'>Edit Task</button>
+              <button onClick={() => remove(y.id)} className='remove'>Remove Task</button>
             </div>
           ) : null
         ))}
       </div>
     ))}
-    <button onClick={() => addToggle()}>Add Task</button>
+    <button onClick={() => addToggle()} className='addTask'>Add Task</button>
   </article>
 );
 
